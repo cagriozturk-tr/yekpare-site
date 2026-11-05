@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Randevu talebi</title>
+<link rel="stylesheet" href="stil.css">
+<style>
+  label { display:block; font-weight:600; margin:16px 0 6px; }
+  input[type=text], input[type=tel], input[type=date], select, textarea { width:100%; font:inherit; padding:12px; border:1px solid var(--cizgi); border-radius:10px; background:var(--yuzey); color:var(--metin); }
+  .dilimler { display:flex; flex-wrap:wrap; gap:8px; }
+  .dilimler label { margin:0; font-weight:500; border:1px solid var(--cizgi); border-radius:999px; padding:10px 16px; background:var(--yuzey); cursor:pointer; }
+  .dilimler input { margin-right:6px; }
+  .onay { display:flex; gap:10px; align-items:flex-start; font-weight:400; font-size:15px; }
+  .onay input { margin-top:4px; width:20px; height:20px; flex:none; }
+  button { font:inherit; font-weight:700; width:100%; margin-top:22px; padding:14px; border:0; border-radius:12px; background:var(--marka); color:#fff; cursor:pointer; }
+  button:disabled { opacity:.6; cursor:default; }
+  .hata { background:#FCEBEB; color:#A32D2D; border-radius:12px; padding:12px 16px; margin:16px 0; }
+  .tamam { background:#EAF3DE; color:#3B6D11; border-radius:12px; padding:16px; margin:16px 0; }
+  .tuzak { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  [hidden] { display:none !important; }
+  header p { color:#fff; }
+</style>
+</head>
+<body>
+<header><div class="kap"><h1 id="baslik">Randevu talebi</h1><p>Talebinizi bırakın, size dönüş yapılsın</p></div></header>
+<main>
+<p id="yukleniyor" class="soluk">Yükleniyor…</p>
+<div id="bulunamadi" class="hata" hidden>Bu bağlantı şu an kullanılamıyor. İşletmeyle doğrudan iletişime geçebilirsiniz.</div>
+
+<form id="form" hidden novalidate>
+  <div class="kutu soluk">Bu bir <strong>randevu değil, talep</strong> formudur. Müşteri tarafında boş saat gösterilmez; işletme talebinizi görüp sizinle iletişime geçerek saati birlikte netleştirir.</div>
+
+  <label for="hizmet">Hizmet (isteğe bağlı)</label>
+  <select id="hizmet"><option value="">Henüz karar vermedim</option></select>
+
+  <label for="gun">Hangi gün?</label>
+  <input type="date" id="gun" required>
+
+  <label>Gün içinde ne zaman?</label>
+  <div class="dilimler">
+    <label><input type="radio" name="dilim" value="sabah">Sabah</label>
+    <label><input type="radio" name="dilim" value="ogleden_sonra">Öğleden sonra</label>
+    <label><input type="radio" name="dilim" value="aksam">Akşam</label>
+    <label><input type="radio" name="dilim" value="farketmez" checked>Fark etmez</label>
+  </div>
+
+  <label for="ad">Adınız soyadınız</label>
+  <input type="text" id="ad" autocomplete="name" maxlength="120" required>
+
+  <label for="telefon">Cep telefonunuz</label>
+  <input type="tel" id="telefon" autocomplete="tel" inputmode="tel" placeholder="05xx xxx xx xx" maxlength="20" required>
+
+  <label for="not">Eklemek istediğiniz not (isteğe bağlı)</label>
+  <textarea id="not" rows="3" maxlength="300"></textarea>
+
+  <!-- Gizli tuzak alanı: insan görmez, otomatik programlar doldurur. -->
+  <div class="tuzak" aria-hidden="true"><label for="web">Web sitesi</label><input type="text" id="web" tabindex="-1" autocomplete="off"></div>
+
+  <label class="onay"><input type="checkbox" id="kvkk"><span>Adımın ve telefonumun, randevu talebime dönüş yapılması amacıyla <strong id="isletmeAdi">işletme</strong> ile paylaşılmasını kabul ediyorum. Ayrıntı için <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a>.</span></label>
+
+  <div id="hata" class="hata" hidden role="alert"></div>
+  <button type="submit" id="gonder">Talebi gönder</button>
+</form>
+
+<div id="tamam" class="tamam" hidden role="status"><strong>Talebiniz alındı.</strong><br>İşletme sizinle telefonla ya da WhatsApp'tan iletişime geçerek saati netleştirecek. Randevunuz bu aşamada kesinleşmemiştir.</div>
+</main>
+<footer><nav><a href="gizlilik.html">Gizlilik</a><a href="destek.html">Destek</a></nav></footer>
+
+<script>
+(function () {
+  // Herkese açık anahtar (publishable): yalnız iki açık işleve (online_isletme, online_talep_gonder) erişir; tablolar kapalıdır.
+  var API = 'https://vvrsmicxkakfoprihorp.supabase.co/rest/v1/rpc/';
+  var ANAHTAR = 'sb_publishable_Tdrenv1t7daOEJEUpsHXzg_zGshYREZ';
+  var salon = (new URLSearchParams(location.search).get('salon') || '').toLowerCase().trim();
+  var $ = function (id) { return document.getElementById(id); };
+
+  function cagir(ad, govde) {
+    return fetch(API + ad, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: ANAHTAR, Authorization: 'Bearer ' + ANAHTAR },
+      body: JSON.stringify(govde)
+    }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); });
+  }
+  function yerel(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+  var MESAJ = {
+    kvkk: 'Devam etmek için paylaşım onayını işaretleyin.',
+    ad: 'Adınızı ve soyadınızı yazın.',
+    telefon: 'Cep telefonunuzu doğru yazın. Örn. 0532 123 45 67',
+    tarih: 'Tarih seçin (bugünden itibaren en çok 60 gün sonrası).',
+    hizmet: 'Seçtiğiniz hizmet artık kullanılamıyor. Sayfayı yenileyip tekrar deneyin.',
+    limit: 'Çok fazla talep gönderdiniz. Lütfen biraz sonra tekrar deneyin ya da işletmeyi arayın.',
+    bulunamadi: 'Bu bağlantı şu an kullanılamıyor.'
+  };
+
+  function kapali() { $('yukleniyor').hidden = true; $('bulunamadi').hidden = false; }
+  if (!/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(salon)) { kapali(); return; }
+
+  cagir('online_isletme', { p_ad: salon }).then(function (b) {
+    if (!b) { kapali(); return; }
+    document.title = b.ad + ' · Randevu talebi';
+    $('baslik').textContent = b.ad;
+    $('isletmeAdi').textContent = b.ad;
+    (b.hizmetler || []).forEach(function (h) {
+      var o = document.createElement('option'); o.value = h.id; o.textContent = h.ad; $('hizmet').appendChild(o);
+    });
+    var bugun = new Date(), son = new Date(); son.setDate(son.getDate() + 60);
+    $('gun').min = yerel(bugun); $('gun').max = yerel(son);
+    $('yukleniyor').hidden = true; $('form').hidden = false;
+  }).catch(function () {
+    $('yukleniyor').hidden = true;
+    var h = $('bulunamadi'); h.textContent = 'Sayfa şu an açılamadı. Bağlantınızı kontrol edip tekrar deneyin.'; h.hidden = false;
+  });
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var hata = $('hata'); hata.hidden = true;
+    var dilim = document.querySelector('input[name=dilim]:checked');
+    $('gonder').disabled = true;
+    cagir('online_talep_gonder', {
+      p_ad: salon, p_hizmet: $('hizmet').value || null, p_musteri_ad: $('ad').value, p_telefon: $('telefon').value,
+      p_gun: $('gun').value || null, p_dilim: dilim ? dilim.value : 'farketmez', p_not: $('not').value || null,
+      p_kvkk: $('kvkk').checked, p_tuzak: $('web').value
+    }).then(function (s) {
+      if (s === 'tamam') { $('form').hidden = true; $('tamam').hidden = false; window.scrollTo(0, 0); return; }
+      hata.textContent = MESAJ[s] || 'Talep gönderilemedi. Tekrar deneyin.'; hata.hidden = false; $('gonder').disabled = false;
+    }).catch(function () {
+      hata.textContent = 'Talep gönderilemedi. Bağlantınızı kontrol edip tekrar deneyin.'; hata.hidden = false; $('gonder').disabled = false;
+    });
+  });
+})();
+</script>
+</body>
+</html>
