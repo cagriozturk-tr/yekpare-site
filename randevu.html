@@ -52,13 +52,19 @@
   <label for="telefon">Cep telefonunuz</label>
   <input type="tel" id="telefon" autocomplete="tel" inputmode="tel" placeholder="05xx xxx xx xx" maxlength="20" required>
 
+  <!-- Yalnız müşteriye GİDEN işletmelerde (tesisat, elektrik, klima…) görünür: gitmeden adres bilinmeli. -->
+  <div id="adresAlani" hidden>
+    <label for="adres">Adresiniz (mahalle, sokak, kapı no)</label>
+    <textarea id="adres" rows="2" maxlength="300" autocomplete="street-address"></textarea>
+  </div>
+
   <label for="not">Eklemek istediğiniz not (isteğe bağlı)</label>
   <textarea id="not" rows="3" maxlength="300"></textarea>
 
   <!-- Gizli tuzak alanı: insan görmez, otomatik programlar doldurur. -->
   <div class="tuzak" aria-hidden="true"><label for="web">Web sitesi</label><input type="text" id="web" tabindex="-1" autocomplete="off"></div>
 
-  <label class="onay"><input type="checkbox" id="kvkk"><span>Adımın ve telefonumun, randevu talebime dönüş yapılması amacıyla <strong id="isletmeAdi">işletme</strong> ile paylaşılmasını kabul ediyorum. Ayrıntı için <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a>.</span></label>
+  <label class="onay"><input type="checkbox" id="kvkk"><span>Adımın, telefonumun <span id="kvkkAdres" hidden>ve adresimin </span>randevu talebime dönüş yapılması amacıyla <strong id="isletmeAdi">işletme</strong> ile paylaşılmasını kabul ediyorum. Ayrıntı için <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a>.</span></label>
 
   <div id="hata" class="hata" hidden role="alert"></div>
   <button type="submit" id="gonder">Talebi gönder</button>
@@ -91,6 +97,7 @@
     telefon: 'Cep telefonunuzu doğru yazın. Örn. 0532 123 45 67',
     tarih: 'Tarih seçin (bugünden itibaren en çok 60 gün sonrası).',
     hizmet: 'Seçtiğiniz hizmet artık kullanılamıyor. Sayfayı yenileyip tekrar deneyin.',
+    adres: 'Adresinizi yazın (mahalle, sokak ve kapı numarası). İşletme size gelebilmek için adrese ihtiyaç duyar.',
     limit: 'Çok fazla talep gönderdiniz. Lütfen biraz sonra tekrar deneyin ya da işletmeyi arayın.',
     bulunamadi: 'Bu bağlantı şu an kullanılamıyor.'
   };
@@ -103,6 +110,7 @@
     document.title = b.ad + ' · Randevu talebi';
     $('baslik').textContent = b.ad;
     $('isletmeAdi').textContent = b.ad;
+    if (b.tur === 'saha_hizmeti') { $('adresAlani').hidden = false; $('kvkkAdres').hidden = false; }
     (b.hizmetler || []).forEach(function (h) {
       var o = document.createElement('option'); o.value = h.id; o.textContent = h.ad; $('hizmet').appendChild(o);
     });
@@ -122,7 +130,7 @@
     cagir('online_talep_gonder', {
       p_ad: salon, p_hizmet: $('hizmet').value || null, p_musteri_ad: $('ad').value, p_telefon: $('telefon').value,
       p_gun: $('gun').value || null, p_dilim: dilim ? dilim.value : 'farketmez', p_not: $('not').value || null,
-      p_kvkk: $('kvkk').checked, p_tuzak: $('web').value
+      p_kvkk: $('kvkk').checked, p_tuzak: $('web').value, p_adres: $('adres').value || null
     }).then(function (s) {
       if (s === 'tamam') { $('form').hidden = true; $('tamam').hidden = false; window.scrollTo(0, 0); return; }
       hata.textContent = MESAJ[s] || 'Talep gönderilemedi. Tekrar deneyin.'; hata.hidden = false; $('gonder').disabled = false;

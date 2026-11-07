@@ -32,7 +32,7 @@
 
 <div id="icerik" hidden>
   <div class="bilgi">
-    <div class="soluk">Randevunuz</div>
+    <div class="soluk" id="etiket">Randevunuz</div>
     <div class="buyuk" id="zaman"></div>
     <div id="hizmet" class="soluk"></div>
   </div>
@@ -43,7 +43,7 @@
     <button type="button" class="hayir" id="hayir">Hayır, randevuyu iptal et</button>
   </div>
   <div id="onayIptal" hidden>
-    <div class="kutu"><strong>Randevunuzu iptal etmek istediğinizden emin misiniz?</strong><br><span class="soluk">İptal ettiğinizde bu saat işletme için boşalır. Yeniden randevu için işletmeyle iletişime geçmeniz gerekir.</span></div>
+    <div class="kutu"><strong id="onayBaslik">Randevunuzu iptal etmek istediğinizden emin misiniz?</strong><br><span class="soluk" id="onayAciklama">İptal ettiğinizde bu saat işletme için boşalır. Yeniden randevu için işletmeyle iletişime geçmeniz gerekir.</span></div>
     <button type="button" class="iptal" id="iptalEt">Evet, iptal et</button>
     <button type="button" class="hayir" id="vazgec">Vazgeç, randevum kalsın</button>
   </div>
@@ -80,8 +80,32 @@
 
   if (!/^[0-9a-f]{20,32}$/.test(kod)) { mesaj('gecersiz', 'Bu bağlantı geçerli değil. İşletmeyle doğrudan iletişime geçebilirsiniz.'); return; }
 
+  // Müşteriye GİDEN işletmelerde (tesisat, elektrik, klima…) müşteri gelmez, işletme gider: sözcükler buna göre.
+  var SOZ = {
+    evetSonuc: 'Teşekkürler, randevunuz onaylandı. Sizi bekliyoruz.',
+    hayirSonuc: 'Randevunuz iptal edildi. Yeniden randevu için işletmeyle iletişime geçebilirsiniz.',
+    kapali: 'Bu randevu artık değiştirilemiyor (geçmiş ya da daha önce iptal edilmiş).',
+    iptalNot: 'Bu randevu iptal edilmiş. Yeniden randevu için işletmeyle iletişime geçebilirsiniz.',
+    evetNot: 'Bu randevuyu onayladınız. Gelemeyecekseniz aşağıdan iptal edebilirsiniz.'
+  };
+  function sahaDili() {
+    $('etiket').textContent = 'Ziyaret zamanı';
+    document.querySelector('header p').textContent = 'Ziyaretinizi onaylayın ya da iptal edin';
+    $('evet').textContent = 'Evet, uygunum';
+    $('hayir').textContent = 'Hayır, ziyareti iptal et';
+    $('onayBaslik').textContent = 'Ziyareti iptal etmek istediğinizden emin misiniz?';
+    $('onayAciklama').textContent = 'İptal ettiğinizde bu saat işletme için boşalır. Yeniden planlamak için işletmeyle iletişime geçmeniz gerekir.';
+    $('vazgec').textContent = 'Vazgeç, ziyaret kalsın';
+    SOZ.evetSonuc = 'Teşekkürler, ziyaret onaylandı. Size geleceğiz.';
+    SOZ.hayirSonuc = 'Ziyaret iptal edildi. Yeniden planlamak için işletmeyle iletişime geçebilirsiniz.';
+    SOZ.kapali = 'Bu ziyaret artık değiştirilemiyor (geçmiş ya da daha önce iptal edilmiş).';
+    SOZ.iptalNot = 'Bu ziyaret iptal edilmiş. Yeniden planlamak için işletmeyle iletişime geçebilirsiniz.';
+    SOZ.evetNot = 'Bu ziyareti onayladınız. Uygun değilseniz aşağıdan iptal edebilirsiniz.';
+  }
+
   function goster(b) {
-    document.title = b.isletme + ' · Randevu onayı';
+    if (b.tur === 'saha_hizmeti') sahaDili();
+    document.title = b.isletme + ' · ' + (b.tur === 'saha_hizmeti' ? 'Ziyaret onayı' : 'Randevu onayı');
     $('baslik').textContent = b.isletme;
     $('zaman').textContent = tarihMetni(b.baslangic);
     $('hizmet').textContent = b.hizmet || '';
@@ -89,11 +113,9 @@
     if (!b.acik) {
       $('sorular').hidden = true; $('onayIptal').hidden = true;
       not.hidden = false;
-      not.textContent = b.durum === 'iptal'
-        ? 'Bu randevu iptal edilmiş. Yeniden randevu için işletmeyle iletişime geçebilirsiniz.'
-        : 'Bu randevu artık değiştirilemiyor.';
+      not.textContent = b.durum === 'iptal' ? SOZ.iptalNot : SOZ.kapali;
     } else if (b.cevap === 'evet') {
-      not.hidden = false; not.textContent = 'Bu randevuyu onayladınız. Gelemeyecekseniz aşağıdan iptal edebilirsiniz.';
+      not.hidden = false; not.textContent = SOZ.evetNot;
       $('evet').hidden = true;
     }
     gizle(); $('icerik').hidden = false;
@@ -108,11 +130,9 @@
     ['evet', 'hayir', 'iptalEt', 'vazgec'].forEach(function (i) { $(i).disabled = true; });
     cagir('randevu_onay_cevapla', { p_kod: kod, p_cevap: cevap }).then(function (s) {
       if (s === 'tamam') {
-        mesaj('sonuc', cevap === 'evet'
-          ? 'Teşekkürler, randevunuz onaylandı. Sizi bekliyoruz.'
-          : 'Randevunuz iptal edildi. Yeniden randevu için işletmeyle iletişime geçebilirsiniz.');
+        mesaj('sonuc', cevap === 'evet' ? SOZ.evetSonuc : SOZ.hayirSonuc);
       } else if (s === 'kapali') {
-        mesaj('hata', 'Bu randevu artık değiştirilemiyor (geçmiş ya da daha önce iptal edilmiş).');
+        mesaj('hata', SOZ.kapali);
       } else {
         mesaj('hata', 'İşlem tamamlanamadı. Lütfen işletmeyle iletişime geçin.');
       }
