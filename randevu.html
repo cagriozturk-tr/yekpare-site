@@ -12,6 +12,9 @@
   .dilimler { display:flex; flex-wrap:wrap; gap:8px; }
   .dilimler label { margin:0; font-weight:500; border:1px solid var(--cizgi); border-radius:999px; padding:10px 16px; background:var(--yuzey); cursor:pointer; }
   .dilimler input { margin-right:6px; }
+  .dilimler label.secili { border-color:var(--marka); background:var(--marka); color:#fff; }
+  .dilimler input[type=radio] { position:absolute; opacity:0; pointer-events:none; }
+  .dilimler label:has(input:focus-visible) { outline:3px solid var(--marka); outline-offset:2px; }
   .onay { display:flex; gap:10px; align-items:flex-start; font-weight:400; font-size:15px; }
   .onay input { margin-top:4px; width:20px; height:20px; flex:none; }
   button { font:inherit; font-weight:700; width:100%; margin-top:22px; padding:14px; border:0; border-radius:12px; background:var(--marka); color:#fff; cursor:pointer; }
@@ -30,7 +33,7 @@
 <div id="bulunamadi" class="hata" hidden>Bu bağlantı şu an kullanılamıyor. İşletmeyle doğrudan iletişime geçebilirsiniz.</div>
 
 <form id="form" hidden novalidate>
-  <div class="kutu soluk">Bu bir <strong>randevu değil, talep</strong> formudur. Müşteri tarafında boş saat gösterilmez; işletme talebinizi görüp sizinle iletişime geçerek saati birlikte netleştirir.</div>
+  <div class="kutu soluk">Bu bir <strong>randevu değil, talep</strong> formudur. Günü seçince boş saatleri görürsünüz; istediğiniz saati seçin. İşletme talebinizi onaylayıp sizinle iletişime geçer.</div>
 
   <label for="hizmet">Hizmet (isteğe bağlı)</label>
   <select id="hizmet"><option value="">Henüz karar vermedim</option></select>
@@ -38,13 +41,9 @@
   <label for="gun">Hangi gün?</label>
   <input type="date" id="gun" required>
 
-  <label>Gün içinde ne zaman?</label>
-  <div class="dilimler">
-    <label><input type="radio" name="dilim" value="sabah">Sabah</label>
-    <label><input type="radio" name="dilim" value="ogleden_sonra">Öğleden sonra</label>
-    <label><input type="radio" name="dilim" value="aksam">Akşam</label>
-    <label><input type="radio" name="dilim" value="farketmez" checked>Fark etmez</label>
-  </div>
+  <label>Hangi saat?</label>
+  <p id="saatBilgi" class="soluk" style="margin:0 0 8px">Önce günü seçin.</p>
+  <div class="dilimler" id="saatler"></div>
 
   <label for="ad">Adınız soyadınız</label>
   <input type="text" id="ad" autocomplete="name" maxlength="120" required>
@@ -70,7 +69,7 @@
   <button type="submit" id="gonder">Talebi gönder</button>
 </form>
 
-<div id="tamam" class="tamam" hidden role="status"><strong>Talebiniz alındı.</strong><br>İşletme sizinle telefonla ya da WhatsApp'tan iletişime geçerek saati netleştirecek. Randevunuz bu aşamada kesinleşmemiştir.</div>
+<div id="tamam" class="tamam" hidden role="status"><strong>Talebiniz alındı.</strong><br>İşletme talebinizi onaylamak için sizinle telefonla ya da WhatsApp'tan iletişime geçecek. Randevunuz bu aşamada kesinleşmemiştir.</div>
 </main>
 <footer><nav><a href="gizlilik.html">Gizlilik</a><a href="destek.html">Destek</a></nav></footer>
 
@@ -98,6 +97,7 @@
     tarih: 'Tarih seçin (bugünden itibaren en çok 60 gün sonrası).',
     hizmet: 'Seçtiğiniz hizmet artık kullanılamıyor. Sayfayı yenileyip tekrar deneyin.',
     adres: 'Adresinizi yazın (mahalle, sokak ve kapı numarası). İşletme size gelebilmek için adrese ihtiyaç duyar.',
+    saat: 'Seçtiğiniz saat az önce doldu. Başka bir saat seçin.',
     limit: 'Çok fazla talep gönderdiniz. Lütfen biraz sonra tekrar deneyin ya da işletmeyi arayın.',
     bulunamadi: 'Bu bağlantı şu an kullanılamıyor.'
   };
@@ -122,14 +122,49 @@
     var h = $('bulunamadi'); h.textContent = 'Sayfa şu an açılamadı. Bağlantınızı kontrol edip tekrar deneyin.'; h.hidden = false;
   });
 
+  // Boş saatler: gün (ve hizmet) değişince yeniden istenir. Sıra numarası, geç gelen eski yanıtın yenisini ezmesini önler.
+  var sira = 0;
+  function saatCiz(liste) {
+    var k = $('saatler'); k.innerHTML = '';
+    function chip(deger, yazi, secili) {
+      var l = document.createElement('label'), i = document.createElement('input');
+      i.type = 'radio'; i.name = 'saat'; i.value = deger; i.checked = !!secili;
+      l.appendChild(i); l.appendChild(document.createTextNode(yazi));
+      if (secili) l.className = 'secili';
+      i.addEventListener('change', function () {
+        Array.prototype.forEach.call(k.children, function (c) { c.className = ''; });
+        l.className = 'secili';
+      });
+      k.appendChild(l);
+    }
+    liste.forEach(function (s) { chip(s, s, false); });
+    chip('', 'Fark etmez', true);
+  }
+  function saatleriGetir() {
+    var g = $('gun').value, bilgi = $('saatBilgi'), n = ++sira;
+    if (!g) { $('saatler').innerHTML = ''; bilgi.textContent = 'Önce günü seçin.'; return; }
+    bilgi.textContent = 'Boş saatler yükleniyor…'; $('saatler').innerHTML = '';
+    cagir('online_bos_saatler', { p_ad: salon, p_gun: g, p_hizmet: $('hizmet').value || null }).then(function (l) {
+      if (n !== sira) return;
+      l = Array.isArray(l) ? l : [];
+      bilgi.textContent = l.length ? 'Boş saatler (yaklaşık süreye göre). İstediğinizi seçin ya da “Fark etmez”i bırakın.' : 'Bu gün için boş saat görünmüyor. Başka bir gün seçebilir ya da “Fark etmez” ile talep bırakabilirsiniz.';
+      saatCiz(l);
+    }).catch(function () {
+      if (n !== sira) return;
+      bilgi.textContent = 'Boş saatler getirilemedi. “Fark etmez” ile talep bırakabilirsiniz.'; saatCiz([]);
+    });
+  }
+  $('gun').addEventListener('change', saatleriGetir);
+  $('hizmet').addEventListener('change', saatleriGetir);
+
   $('form').addEventListener('submit', function (e) {
     e.preventDefault();
     var hata = $('hata'); hata.hidden = true;
-    var dilim = document.querySelector('input[name=dilim]:checked');
+    var saatSecim = document.querySelector('input[name=saat]:checked');
     $('gonder').disabled = true;
     cagir('online_talep_gonder', {
       p_ad: salon, p_hizmet: $('hizmet').value || null, p_musteri_ad: $('ad').value, p_telefon: $('telefon').value,
-      p_gun: $('gun').value || null, p_dilim: dilim ? dilim.value : 'farketmez', p_not: $('not').value || null,
+      p_gun: $('gun').value || null, p_dilim: 'farketmez', p_saat: saatSecim && saatSecim.value ? saatSecim.value : null, p_not: $('not').value || null,
       p_kvkk: $('kvkk').checked, p_tuzak: $('web').value, p_adres: $('adres').value || null
     }).then(function (s) {
       if (s === 'tamam') { $('form').hidden = true; $('tamam').hidden = false; window.scrollTo(0, 0); return; }
