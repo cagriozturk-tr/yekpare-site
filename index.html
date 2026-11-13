@@ -1,5 +1,235 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Yekpare</title><link rel="stylesheet" href="stil.css"></head>
-<body><header><div class="kap"><h1>Yekpare</h1><p>Tüm işin tek yerde</p></div></header>
-<main><p>Yekpare, küçük işletmeler için müşteri, randevu ve kasa uygulamasıdır.</p>
-<nav><a href="gizlilik.html">Gizlilik politikası</a><a href="destek.html">Destek</a><a href="hesap-silme.html">Hesap silme</a></nav></main></body></html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yekpare · Salonunuzun randevu defteri</title>
+<meta name="description" content="Yekpare; berber, kuaför ve güzellik salonları için müşteri, randevu, kasa ve WhatsApp mesajlarını tek uygulamada toplar.">
+<meta name="theme-color" content="#2563FF">
+<link rel="icon" href="favicon.png">
+<style>
+:root {
+  color-scheme: light dark;
+  --marka: #2563FF; --marka-koyu: #1B4FD1; --marka-acik: #E4EDFF;
+  --zemin: #FFFFFF; --zemin-alt: #F3F8FF; --metin: #0F1F3D; --ikinci: #4A5B78; --cizgi: rgba(15,31,61,.14);
+  --wa: #25D366; --wa-zemin: #DCF8C6; --wa-metin: #0B2A14;
+  --uyari: #854F0B; --uyari-zemin: #FAEEDA;
+  --yazi: -apple-system, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --zemin: #0C1424; --zemin-alt: #101B30; --metin: #EAF1FF; --ikinci: #A9B8D3; --cizgi: rgba(255,255,255,.16); --marka-acik: #173A73; }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--zemin); color: var(--metin); font: 18px/1.6 var(--yazi); -webkit-text-size-adjust: 100%; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid #FFC83D; outline-offset: 3px; border-radius: 6px; }
+.kap { width: min(1240px, 100% - 40px); margin-inline: auto; }
+
+/* ---------- Hero: marka mavisi, tam bant ---------- */
+.hero { background: var(--marka); color: #fff; overflow: hidden; }
+.hero-ic { display: grid; gap: 32px; padding-top: 28px; }
+.marka { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 22px; letter-spacing: -.01em; text-decoration: none; }
+.marka img { width: 44px; height: 44px; border-radius: 12px; }
+.hero h1 { margin: 0 0 18px; font-size: clamp(38px, 8.4vw, 68px); line-height: 1.02; letter-spacing: -.035em; font-weight: 800; text-wrap: balance; }
+.hero p.alt { margin: 0 0 28px; font-size: clamp(18px, 2.6vw, 21px); line-height: 1.5; max-width: 34em; color: rgba(255,255,255,.92); }
+.dugme { display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; border-radius: 14px; background: #fff; color: var(--marka-koyu); font-weight: 700; font-size: 18px; text-decoration: none; }
+.dugme:hover { background: #F0F5FF; }
+.dugme.koyu { background: var(--marka); color: #fff; }
+.dugme.koyu:hover { background: var(--marka-koyu); }
+.not { margin: 14px 0 0; font-size: 15px; color: rgba(255,255,255,.8); }
+
+/* telefon + WhatsApp mesajı */
+.sahne { position: relative; justify-self: center; width: min(330px, 86%); margin-bottom: -170px; }
+.telefon { background: #0B1226; border-radius: 44px; padding: 10px; box-shadow: 0 30px 60px rgba(7,20,70,.45); }
+.ekran { background: #F3F8FF; color: #0F1F3D; border-radius: 35px; padding: 18px 14px 220px; font-size: 13px; line-height: 1.35; overflow: hidden; }
+.ekran .tarih { font-size: 12px; color: #4A5B78; }
+.ekran .ad { font-size: 21px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 10px; }
+.izgara { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.kutu { position: relative; background: #E3EEFF; border-radius: 12px; min-height: 62px; padding: 8px 2px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 10.5px; font-weight: 600; text-align: center; color: #0F1F3D; }
+.kutu svg { width: 22px; height: 22px; stroke: #1A63D1; }
+.kutu.ana { background: #1D6FE8; color: #fff; }
+.kutu.ana svg { stroke: #fff; }
+.kutu .rozet { position: absolute; top: 3px; right: 3px; min-width: 16px; height: 16px; border-radius: 8px; background: #FAEEDA; border: 1px solid #854F0B; color: #854F0B; font-size: 10px; line-height: 14px; font-weight: 800; }
+.seritcik { margin: 12px 0 6px; font-size: 11px; font-weight: 700; color: #4A5B78; }
+.gunu-kapat { border: 1.5px solid #1D6FE8; background: #E3EEFF; color: #1A63D1; border-radius: 11px; padding: 9px 11px; font-weight: 700; }
+.randevu { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid rgba(15,31,61,.12); border-radius: 11px; padding: 9px 11px; margin-top: 6px; }
+.randevu b { min-width: 42px; font-weight: 700; color: #4A5B78; }
+.randevu span { flex: 1; font-weight: 600; }
+.randevu i { font-style: normal; font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: #E3EEFF; color: #1A63D1; }
+.randevu i.bekliyor { background: #FAEEDA; color: #854F0B; }
+
+.mesaj { position: absolute; left: -24%; bottom: 182px; width: 84%; background: var(--wa-zemin); color: var(--wa-metin); border-radius: 18px 18px 18px 4px; padding: 12px 14px 10px; font-size: 14.5px; line-height: 1.4; box-shadow: 0 14px 30px rgba(7,20,70,.3); animation: gel .5s .7s both cubic-bezier(.2,.8,.2,1); }
+.mesaj .kim { display: block; font-size: 12px; font-weight: 700; color: #0B7A36; margin-bottom: 2px; }
+.mesaj u { text-decoration: underline; color: #0B5AA8; word-break: break-all; }
+.mesaj small { display: block; text-align: right; font-size: 11px; color: rgba(11,42,20,.55); margin-top: 2px; }
+@keyframes gel { from { opacity: 0; transform: translateY(18px) scale(.96); } to { opacity: 1; transform: none; } }
+
+/* ---------- Gövde ---------- */
+.bolum { padding: 72px 0; }
+.bolum.alt { background: var(--zemin-alt); }
+h2 { margin: 0 0 14px; font-size: clamp(28px, 5vw, 40px); line-height: 1.1; letter-spacing: -.03em; font-weight: 800; text-wrap: balance; max-width: 18em; }
+.giris { margin: 0 0 36px; color: var(--ikinci); max-width: 36em; }
+
+/* Bir günün akışı: saat damgalı */
+.gun { list-style: none; margin: 0; padding: 0; border-left: 3px solid var(--marka); }
+.gun li { display: grid; gap: 2px 20px; padding: 0 0 28px 22px; position: relative; }
+.gun li:last-child { padding-bottom: 0; }
+.gun li::before { content: ""; position: absolute; left: -10px; top: 7px; width: 17px; height: 17px; border-radius: 50%; background: var(--zemin); border: 4px solid var(--marka); }
+.bolum.alt .gun li::before { background: var(--zemin-alt); }
+.gun time { font-weight: 800; font-size: 20px; letter-spacing: -.01em; color: var(--marka); }
+@media (prefers-color-scheme: dark) { .gun time { color: #7FB0FF; } .gun, .gun li::before { border-color: #4B84FF; } }
+.gun h3 { margin: 0; font-size: 20px; letter-spacing: -.01em; }
+.gun p { margin: 4px 0 0; color: var(--ikinci); max-width: 34em; }
+
+/* Özellikler: kart değil, çizgili düz liste */
+.liste { display: grid; grid-template-columns: 1fr; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--cizgi); }
+.liste li { padding: 18px 0; border-bottom: 1px solid var(--cizgi); display: grid; gap: 4px; }
+.liste b { font-size: 19px; letter-spacing: -.01em; }
+.liste span { color: var(--ikinci); }
+
+.cagri { background: var(--marka); color: #fff; }
+.cagri .kap { padding: 64px 0; display: grid; gap: 22px; justify-items: start; }
+.cagri h2 { color: #fff; margin: 0; }
+.cagri p { margin: 0; max-width: 34em; color: rgba(255,255,255,.92); }
+
+footer { padding: 36px 0 56px; font-size: 15px; color: var(--ikinci); }
+footer nav { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-bottom: 14px; }
+footer nav a { color: var(--metin); text-underline-offset: 3px; }
+
+@media (min-width: 880px) {
+  .hero-ic { grid-template-columns: 1.15fr .85fr; align-items: center; gap: 56px; padding-top: 32px; }
+  .marka { grid-column: 1 / -1; }
+  .sahne { width: 340px; margin-bottom: -150px; justify-self: end; margin-right: 6%; }
+  .hero-yazi { padding-bottom: 150px; }
+  .liste { grid-template-columns: 1fr 1fr; column-gap: 56px; }
+  .gun li { grid-template-columns: 150px 1fr; }
+  .gun li > :nth-child(n+3) { grid-column: 2; }
+}
+@media (min-width: 1100px) {
+  .duzen { display: grid; grid-template-columns: 5fr 7fr; gap: 80px; align-items: start; }
+  .duzen .baslik { position: sticky; top: 48px; }
+  .duzen .giris { margin-bottom: 0; }
+}
+@media (min-width: 1200px) {
+  .hero h1 { font-size: 84px; }
+  .hero p.alt { font-size: 22px; }
+  .sahne { zoom: 1.2; margin-right: 4%; }
+}
+@media (max-width: 879px) {
+  .mesaj { left: -4%; width: 88%; bottom: 196px; }
+}
+@media (prefers-reduced-motion: reduce) { .mesaj { animation: none; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-takvim" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+    <symbol id="i-musteri" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17.5 14c2.4 0 4 1.8 4 4.5"/></symbol>
+    <symbol id="i-kasa" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="3" y="8" width="18" height="12" rx="3"/><circle cx="16.5" cy="14" r="1.2"/></symbol>
+    <symbol id="i-mesaj" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19l1.3-3.6A8 8 0 1 1 8.4 18.7L4 19z"/></symbol>
+    <symbol id="i-stok" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></symbol>
+    <symbol id="i-hizmet" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1.3"/></symbol>
+    <symbol id="i-personel" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1"/></symbol>
+  </defs>
+</svg>
+
+<header class="hero">
+  <div class="kap hero-ic">
+    <a class="marka" href="./" aria-label="Yekpare ana sayfa"><img src="ikon.png" alt="" width="44" height="44">Yekpare</a>
+    <div class="hero-yazi">
+      <h1>Randevu defteriniz telefonunuzda.</h1>
+      <p class="alt">Müşteri, randevu, kasa ve WhatsApp mesajları tek uygulamada. Berber, kuaför ve güzellik salonları için.</p>
+      <a class="dugme" href="mailto:cagriozzturk@gmail.com?subject=Yekpare%20pilot%20salon">Pilot salona katılın</a>
+      <p class="not">Uygulama şu an seçili salonlarla davetle test ediliyor. Mağaza yayını hazırlanıyor.</p>
+    </div>
+    <div class="sahne">
+      <div class="telefon" role="img" aria-label="Yekpare uygulamasının Bugün ekranı: sekiz kısayol kutusu, günü kapatma kartı ve bugünün randevuları.">
+        <div class="ekran" aria-hidden="true">
+          <div class="tarih">Çarşamba, 11 Kasım</div>
+          <div class="ad">Kuzey Güzellik</div>
+          <div class="izgara">
+            <div class="kutu ana"><svg><use href="#i-takvim"/></svg>Yeni randevu</div>
+            <div class="kutu"><svg><use href="#i-musteri"/></svg>Müşteri</div>
+            <div class="kutu"><svg><use href="#i-kasa"/></svg>Kasa</div>
+            <div class="kutu"><svg><use href="#i-mesaj"/></svg>Mesaj</div>
+            <div class="kutu"><svg><use href="#i-stok"/></svg>Stok<span class="rozet">2</span></div>
+            <div class="kutu"><svg><use href="#i-hizmet"/></svg>Hizmet</div>
+            <div class="kutu"><svg><use href="#i-personel"/></svg>Personel</div>
+            <div class="kutu"><svg><use href="#i-link"/></svg>Online</div>
+          </div>
+          <div class="seritcik">Şimdi yap</div>
+          <div class="gunu-kapat">Günü kapat · 2 açık iş</div>
+          <div class="seritcik">Randevular · bugün</div>
+          <div class="randevu"><b>10:30</b><span>Aslı T. · Cilt bakımı</span><i>Onaylı</i></div>
+          <div class="randevu"><b>14:00</b><span>Merve K. · Saç boyama</span><i class="bekliyor">Bekliyor</i></div>
+          <div class="randevu"><b>16:30</b><span>Elif S. · Manikür</span><i>Onaylı</i></div>
+        </div>
+      </div>
+      <div class="mesaj" role="img" aria-label="Örnek WhatsApp hatırlatma mesajı">
+        <span class="kim">Kuzey Güzellik</span>
+        Merhaba Aslı Hanım, yarın saat 10:30’daki cilt bakımı randevunuzu bekliyoruz. Onaylamak ya da iptal etmek için: <u>yekpare.xyz/o?k=8f3a…</u>
+        <small>18:02</small>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="bolum">
+    <div class="kap duzen">
+      <div class="baslik">
+        <h2>Bir günün akışı, tek uygulamada</h2>
+        <p class="giris">Defterdeki işlerin hepsi burada: hatırlatma, karşılama, tahsilat ve gün sonu.</p>
+      </div>
+      <ol class="gun">
+        <li><time>Dün 18:00</time><h3>Hatırlatma</h3><p>Yarınki randevu için hazır mesaj tek dokunuşla kendi WhatsApp’ınızda açılır. Müşteri bağlantıdan Evet ya da Hayır der, takviminiz kendini günceller.</p></li>
+        <li><time>09:00</time><h3>Gün açılır</h3><p>Bugün ekranı o günün randevularını, unutulan işleri ve azalan stoğu tek bakışta gösterir.</p></li>
+        <li><time>13:30</time><h3>Müşteri gelir</h3><p>Geldi ya da gelmedi tek dokunuşla işaretlenir. Ödeme, avans veya paket seansı aynı yerden girilir.</p></li>
+        <li><time>20:00</time><h3>Gün kapanır</h3><p>Günü kapat ekranı tahsilatı girilmemiş randevuları ve vadesi geçen alacakları listeler. Hiçbir şey defterde unutulmaz.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="bolum alt">
+    <div class="kap">
+      <h2>Salonda gerçekten işe yarayanlar</h2>
+      <p class="giris">Karmaşık menüler yok. Her şey ana ekrandaki sekiz kutudan açılır.</p>
+      <ul class="liste">
+        <li><b>Randevu</b><span>Gün ve hafta takvimi, çakışma uyarısı, telefonunuzun takvimiyle eşitleme.</span></li>
+        <li><b>Müşteri</b><span>Rehberinizden seçerek aktarın. Notlar, geçmiş ve uzun süredir gelmeyenler yanınızda.</span></li>
+        <li><b>Kasa</b><span>Tahsilat, avans, alacak ve borç takibi. Kalan borcu müşteri bazında görürsünüz.</span></li>
+        <li><b>WhatsApp mesajları</b><span>Kendi ağzınızla yazdığınız hazır mesajlar. Mesaj sizin numaranızdan gider.</span></li>
+        <li><b>Stok</b><span>Hazır boya ve malzeme listesi, azalan ürün için uyarı.</span></li>
+        <li><b>Ekip</b><span>Personel ve devam kaydı. Çalışan yalnız kendi randevularını görür; ekibin takvimini görüp görmeyeceğine sahip karar verir.</span></li>
+        <li><b>Online randevu</b><span>Müşterinize kendi bağlantınızı verin, talebi siz onaylayın.</span></li>
+        <li><b>Evde hizmet</b><span>Adres kaydı ve tek dokunuşla yol tarifi. Evde hizmet veren işletmeler için.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="cagri">
+    <div class="kap">
+      <h2>Pilot salonlarla birlikte geliştiriyoruz</h2>
+      <p>Yekpare’yi kendi salonunuzda deneyin. Eksik bulduğunuzu bize yazın, sırayla düzeltiyoruz.</p>
+      <a class="dugme" href="mailto:cagriozzturk@gmail.com?subject=Yekpare%20pilot%20salon">Bize yazın</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="kap">
+    <nav aria-label="Alt bağlantılar">
+      <a href="gizlilik.html">Gizlilik politikası</a>
+      <a href="destek.html">Destek</a>
+      <a href="hesap-silme.html">Hesap silme</a>
+    </nav>
+    <div>© 2026 Yekpare. Hesabınızı ve tüm kayıtlarınızı uygulamadan siz silebilirsiniz.</div>
+  </div>
+</footer>
+
+</body>
+</html>
