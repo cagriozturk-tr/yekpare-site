@@ -12,6 +12,7 @@
   .dilimler { display:flex; flex-wrap:wrap; gap:8px; }
   .dilimler label { margin:0; font-weight:500; border:1px solid var(--cizgi); border-radius:999px; padding:10px 16px; background:var(--yuzey); cursor:pointer; }
   .dilimler input { margin-right:6px; }
+  .dilimler label.pasif { opacity:.38; text-decoration:line-through; cursor:not-allowed; }
   .dilimler label.secili { border-color:var(--marka); background:var(--marka); color:#fff; }
   .dilimler input[type=radio] { position:absolute; opacity:0; pointer-events:none; }
   .dilimler label:has(input:focus-visible) { outline:3px solid var(--marka); outline-offset:2px; }
@@ -33,10 +34,15 @@
 <div id="bulunamadi" class="hata" hidden>Bu bağlantı şu an kullanılamıyor. İşletmeyle doğrudan iletişime geçebilirsiniz.</div>
 
 <form id="form" hidden novalidate>
-  <div class="kutu soluk">Bu bir <strong>randevu değil, talep</strong> formudur. Günü seçince boş saatleri görürsünüz; istediğiniz saati seçin. İşletme talebinizi onaylayıp sizinle iletişime geçer.</div>
+  <div class="kutu soluk">Bu bir <strong>randevu değil, talep</strong> formudur. Günü seçince dolu ve boş saatleri görürsünüz; boş bir saati seçin. İşletme talebinizi onaylayıp sizinle iletişime geçer.</div>
 
   <label for="hizmet">Hizmet (isteğe bağlı)</label>
   <select id="hizmet"><option value="">Henüz karar vermedim</option></select>
+
+  <div id="calisanAlani" hidden>
+    <label>Kimden randevu istiyorsunuz?</label>
+    <div class="dilimler" id="calisanlar"></div>
+  </div>
 
   <label for="gun">Hangi gün?</label>
   <input type="date" id="gun" required>
@@ -98,6 +104,7 @@
     hizmet: 'Seçtiğiniz hizmet artık kullanılamıyor. Sayfayı yenileyip tekrar deneyin.',
     adres: 'Adresinizi yazın (mahalle, sokak ve kapı numarası). İşletme size gelebilmek için adrese ihtiyaç duyar.',
     saat: 'Seçtiğiniz saat az önce doldu. Başka bir saat seçin.',
+    calisan: 'Seçtiğiniz kişi artık seçilemiyor. Sayfayı yenileyip tekrar deneyin.',
     limit: 'Çok fazla talep gönderdiniz. Lütfen biraz sonra tekrar deneyin ya da işletmeyi arayın.',
     bulunamadi: 'Bu bağlantı şu an kullanılamıyor.'
   };
@@ -114,6 +121,10 @@
     (b.hizmetler || []).forEach(function (h) {
       var o = document.createElement('option'); o.value = h.id; o.textContent = h.ad; $('hizmet').appendChild(o);
     });
+    if ((b.calisanlar || []).length) {
+      $('calisanAlani').hidden = false;
+      chipler('calisanlar', 'calisan', [{ v: '', y: 'Fark etmez' }].concat(b.calisanlar.map(function (c) { return { v: c.id, y: c.ad }; })), '', saatleriGetir);
+    }
     var bugun = new Date(), son = new Date(); son.setDate(son.getDate() + 60);
     $('gun').min = yerel(bugun); $('gun').max = yerel(son);
     $('yukleniyor').hidden = true; $('form').hidden = false;
@@ -122,36 +133,42 @@
     var h = $('bulunamadi'); h.textContent = 'Sayfa şu an açılamadı. Bağlantınızı kontrol edip tekrar deneyin.'; h.hidden = false;
   });
 
-  // Boş saatler: gün (ve hizmet) değişince yeniden istenir. Sıra numarası, geç gelen eski yanıtın yenisini ezmesini önler.
-  var sira = 0;
-  function saatCiz(liste) {
-    var k = $('saatler'); k.innerHTML = '';
-    function chip(deger, yazi, secili) {
+  // Seçim düğmeleri (radyo): liste öğeleri {v: değer, y: yazı, pasif: seçilemez}. Pasifler soluk ve tıklanamaz.
+  function chipler(kapId, ad, liste, secili, degisti) {
+    var k = $(kapId); k.innerHTML = '';
+    liste.forEach(function (o) {
       var l = document.createElement('label'), i = document.createElement('input');
-      i.type = 'radio'; i.name = 'saat'; i.value = deger; i.checked = !!secili;
-      l.appendChild(i); l.appendChild(document.createTextNode(yazi));
-      if (secili) l.className = 'secili';
+      i.type = 'radio'; i.name = ad; i.value = o.v; i.checked = o.v === secili && !o.pasif; i.disabled = !!o.pasif;
+      l.appendChild(i); l.appendChild(document.createTextNode(o.y));
+      l.className = (o.pasif ? 'pasif ' : '') + (i.checked ? 'secili' : '');
+      if (o.pasif) l.title = 'Bu saat dolu';
       i.addEventListener('change', function () {
-        Array.prototype.forEach.call(k.children, function (c) { c.className = ''; });
-        l.className = 'secili';
+        Array.prototype.forEach.call(k.children, function (c) { c.className = c.className.replace(/\bsecili\b/g, '').trim(); });
+        l.className = (l.className + ' secili').trim();
+        if (degisti) degisti();
       });
       k.appendChild(l);
-    }
-    liste.forEach(function (s) { chip(s, s, false); });
-    chip('', 'Fark etmez', true);
+    });
   }
+  // Boş/dolu saatler: gün, hizmet veya çalışan değişince yeniden istenir. Sıra numarası, geç gelen eski yanıtın yenisini ezmesini önler.
+  var sira = 0;
   function saatleriGetir() {
     var g = $('gun').value, bilgi = $('saatBilgi'), n = ++sira;
+    var cs = document.querySelector('input[name=calisan]:checked');
     if (!g) { $('saatler').innerHTML = ''; bilgi.textContent = 'Önce günü seçin.'; return; }
-    bilgi.textContent = 'Boş saatler yükleniyor…'; $('saatler').innerHTML = '';
-    cagir('online_bos_saatler', { p_ad: salon, p_gun: g, p_hizmet: $('hizmet').value || null }).then(function (l) {
+    bilgi.textContent = 'Saatler yükleniyor…'; $('saatler').innerHTML = '';
+    cagir('online_saatler', { p_ad: salon, p_gun: g, p_hizmet: $('hizmet').value || null, p_personel: cs && cs.value ? cs.value : null }).then(function (l) {
       if (n !== sira) return;
       l = Array.isArray(l) ? l : [];
-      bilgi.textContent = l.length ? 'Boş saatler (yaklaşık süreye göre). İstediğinizi seçin ya da “Fark etmez”i bırakın.' : 'Bu gün için boş saat görünmüyor. Başka bir gün seçebilir ya da “Fark etmez” ile talep bırakabilirsiniz.';
-      saatCiz(l);
+      var bos = l.filter(function (x) { return x.b; }).length;
+      bilgi.textContent = bos ? 'Soluk saatler dolu. Boş bir saati seçin ya da “Fark etmez”i bırakın.' : 'Bu gün' + (cs && cs.value ? ' bu kişi için' : '') + ' boş saat görünmüyor. Başka bir gün ya da kişi seçebilir, ya da “Fark etmez” ile talep bırakabilirsiniz.';
+      chipler('saatler', 'saat', l.map(function (x) { return { v: x.s, y: x.s, pasif: !x.b }; }).concat([{ v: '', y: 'Fark etmez' }]), '', null);
+      var fe = $('saatler').lastChild; fe.firstChild.checked = true; fe.className = 'secili';
     }).catch(function () {
       if (n !== sira) return;
-      bilgi.textContent = 'Boş saatler getirilemedi. “Fark etmez” ile talep bırakabilirsiniz.'; saatCiz([]);
+      bilgi.textContent = 'Saatler getirilemedi. “Fark etmez” ile talep bırakabilirsiniz.';
+      chipler('saatler', 'saat', [{ v: '', y: 'Fark etmez' }], '', null);
+      var fe = $('saatler').lastChild; fe.firstChild.checked = true; fe.className = 'secili';
     });
   }
   $('gun').addEventListener('change', saatleriGetir);
@@ -165,7 +182,7 @@
     cagir('online_talep_gonder', {
       p_ad: salon, p_hizmet: $('hizmet').value || null, p_musteri_ad: $('ad').value, p_telefon: $('telefon').value,
       p_gun: $('gun').value || null, p_dilim: 'farketmez', p_saat: saatSecim && saatSecim.value ? saatSecim.value : null, p_not: $('not').value || null,
-      p_kvkk: $('kvkk').checked, p_tuzak: $('web').value, p_adres: $('adres').value || null
+      p_kvkk: $('kvkk').checked, p_tuzak: $('web').value, p_adres: $('adres').value || null, p_personel: (document.querySelector('input[name=calisan]:checked') || {}).value || null
     }).then(function (s) {
       if (s === 'tamam') { $('form').hidden = true; $('tamam').hidden = false; window.scrollTo(0, 0); return; }
       hata.textContent = MESAJ[s] || 'Talep gönderilemedi. Tekrar deneyin.'; hata.hidden = false; $('gonder').disabled = false;
