@@ -12,6 +12,9 @@
   .dilimler { display:flex; flex-wrap:wrap; gap:8px; }
   .dilimler label { margin:0; font-weight:500; border:1px solid var(--cizgi); border-radius:999px; padding:10px 16px; background:var(--yuzey); cursor:pointer; }
   .dilimler input { margin-right:6px; }
+  .gunDugmeleri { display:flex; gap:8px; margin-top:8px; }
+  .gunDugmeleri button { flex:1; width:auto; margin:0; padding:10px 8px; background:var(--yuzey); color:var(--metin); border:1px solid var(--cizgi); border-radius:10px; font-weight:600; }
+  .gunDugmeleri button:disabled { opacity:.4; }
   .dilimler label.pasif { opacity:.38; text-decoration:line-through; cursor:not-allowed; }
   .dilimler label.secili { border-color:var(--marka); background:var(--marka); color:#fff; }
   .dilimler input[type=radio] { position:absolute; opacity:0; pointer-events:none; }
@@ -46,6 +49,10 @@
 
   <label for="gun">Hangi gün?</label>
   <input type="date" id="gun" required>
+  <div class="gunDugmeleri">
+    <button type="button" id="oncekiGun">‹ Önceki gün</button>
+    <button type="button" id="sonrakiGun">Sonraki gün ›</button>
+  </div>
 
   <label>Hangi saat?</label>
   <p id="saatBilgi" class="soluk" style="margin:0 0 8px">Önce günü seçin.</p>
@@ -161,6 +168,14 @@
       if (n !== sira) return;
       l = Array.isArray(l) ? l : [];
       var bos = l.filter(function (x) { return x.b; }).length;
+      // Çalışan o gün çalışmıyorsa 24 çizili düğme yerine açık bir cümle (sebep yazılmaz: izin/rapor ayrımı müşteriye açılmaz).
+      if (l.length && l[0].i) {
+        var kim = cs && cs.value ? cs.parentNode.textContent.trim() : '';
+        bilgi.textContent = (kim ? kim + ' bu gün çalışmıyor.' : 'Bu gün randevu alınamıyor.') + ' Başka bir gün' + (kim ? ' ya da kişi' : '') + ' seçebilir, ya da “Fark etmez” ile talep bırakabilirsiniz.';
+        chipler('saatler', 'saat', [{ v: '', y: 'Fark etmez' }], '', null);
+        var fe0 = $('saatler').lastChild; fe0.firstChild.checked = true; fe0.className = 'secili';
+        return;
+      }
       bilgi.textContent = bos ? 'Soluk saatler dolu. Boş bir saati seçin ya da “Fark etmez”i bırakın.' : 'Bu gün' + (cs && cs.value ? ' bu kişi için' : '') + ' boş saat görünmüyor. Başka bir gün ya da kişi seçebilir, ya da “Fark etmez” ile talep bırakabilirsiniz.';
       chipler('saatler', 'saat', l.map(function (x) { return { v: x.s, y: x.s, pasif: !x.b }; }).concat([{ v: '', y: 'Fark etmez' }]), '', null);
       var fe = $('saatler').lastChild; fe.firstChild.checked = true; fe.className = 'secili';
@@ -171,6 +186,26 @@
       var fe = $('saatler').lastChild; fe.firstChild.checked = true; fe.className = 'secili';
     });
   }
+  // Önceki/sonraki gün kısayolu: tarih kutusunu bir gün kaydırır (bugünden önce ve en çok 60 gün sonrası dışına çıkmaz).
+  function gunDugmeDurum() {
+    var g = $('gun').value;
+    $('oncekiGun').disabled = !g || g <= $('gun').min;
+    $('sonrakiGun').disabled = !!g && g >= $('gun').max;
+  }
+  function gunGit(n) {
+    var g = $('gun').value;
+    var d = g ? new Date(g + 'T12:00:00') : new Date($('gun').min + 'T12:00:00');
+    if (g) d.setDate(d.getDate() + n);
+    var y = yerel(d);
+    if (y < $('gun').min || y > $('gun').max) return;
+    $('gun').value = y;
+    gunDugmeDurum();
+    saatleriGetir();
+  }
+  $('oncekiGun').addEventListener('click', function () { gunGit(-1); });
+  $('sonrakiGun').addEventListener('click', function () { gunGit(1); });
+  $('gun').addEventListener('change', gunDugmeDurum);
+  gunDugmeDurum();
   $('gun').addEventListener('change', saatleriGetir);
   $('hizmet').addEventListener('change', saatleriGetir);
 
