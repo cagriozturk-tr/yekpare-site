@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yekpare · Salonunuzun randevu defteri</title>
-<meta name="description" content="Yekpare; berber, kuaför ve güzellik salonları için müşteri, randevu, kasa ve WhatsApp mesajlarını tek uygulamada toplar.">
+<title>Yekpare · Küçük işletmeler için randevu, müşteri ve kasa</title>
+<meta name="description" content="Yekpare; randevuyla çalışan küçük işletmeler için müşteri, randevu, kasa ve WhatsApp mesajlarını tek uygulamada toplar.">
 <meta name="theme-color" content="#2563FF">
 <link rel="icon" href="favicon.png">
 <style>
@@ -24,13 +24,13 @@ html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--zemin); color: var(--metin); font: 18px/1.6 var(--yazi); -webkit-text-size-adjust: 100%; }
 a { color: inherit; }
 :focus-visible { outline: 3px solid #FFC83D; outline-offset: 3px; border-radius: 6px; }
-.kap { width: min(1240px, 100% - 40px); margin-inline: auto; }
+.kap { width: min(1680px, 100% - clamp(40px, 7vw, 160px)); margin-inline: auto; }
 
 /* ---------- Hero: marka mavisi, tam bant ---------- */
 .hero { background: var(--marka); color: #fff; overflow: hidden; }
 .hero-ic { display: grid; gap: 32px; padding-top: 28px; }
-.marka { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 22px; letter-spacing: -.01em; text-decoration: none; }
-.marka img { width: 44px; height: 44px; border-radius: 12px; }
+.marka { display: flex; align-items: center; gap: 16px; font-weight: 800; font-size: 30px; letter-spacing: -.02em; text-decoration: none; }
+.marka img { width: 64px; height: 64px; border-radius: 16px; }
 .hero h1 { margin: 0 0 18px; font-size: clamp(38px, 8.4vw, 68px); line-height: 1.02; letter-spacing: -.035em; font-weight: 800; text-wrap: balance; }
 .hero p.alt { margin: 0 0 28px; font-size: clamp(18px, 2.6vw, 21px); line-height: 1.5; max-width: 34em; color: rgba(255,255,255,.92); }
 .dugme { display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; border-radius: 14px; background: #fff; color: var(--marka-koyu); font-weight: 700; font-size: 18px; text-decoration: none; }
@@ -116,6 +116,13 @@ footer nav a { color: var(--metin); text-underline-offset: 3px; }
   .hero p.alt { font-size: 22px; }
   .sahne { zoom: 1.2; margin-right: 4%; }
 }
+@media (min-width: 1500px) {
+  .hero h1 { font-size: 96px; }
+  .hero p.alt { font-size: 24px; max-width: 32em; }
+  .sahne { zoom: 1.4; }
+  .liste { grid-template-columns: 1fr 1fr 1fr; }
+  .gun p, .giris { font-size: 20px; }
+}
 @media (max-width: 879px) {
   .mesaj { left: -4%; width: 88%; bottom: 196px; }
 }
@@ -139,12 +146,12 @@ footer nav a { color: var(--metin); text-underline-offset: 3px; }
 
 <header class="hero">
   <div class="kap hero-ic">
-    <a class="marka" href="./" aria-label="Yekpare ana sayfa"><img src="ikon.png" alt="" width="44" height="44">Yekpare</a>
+    <a class="marka" href="./" aria-label="Yekpare ana sayfa"><img src="ikon.png" alt="" width="64" height="64">Yekpare</a>
     <div class="hero-yazi">
       <h1>Randevu defteriniz telefonunuzda.</h1>
-      <p class="alt">Müşteri, randevu, kasa ve WhatsApp mesajları tek uygulamada. Berber, kuaför ve güzellik salonları için.</p>
-      <a class="dugme" href="mailto:cagriozzturk@gmail.com?subject=Yekpare%20pilot%20salon">Pilot salona katılın</a>
-      <p class="not">Uygulama şu an seçili salonlarla davetle test ediliyor. Mağaza yayını hazırlanıyor.</p>
+      <p class="alt">Müşteri, randevu, kasa ve WhatsApp mesajları tek uygulamada. Güzellik salonundan oto servise, emlak ofisinden evde hizmet veren ustaya, randevuyla çalışan küçük işletmeler için.</p>
+      <a class="dugme" href="mailto:cagriozzturk@gmail.com?subject=Yekpare%20pilot%20isletme">Pilot işletmeye katılın</a>
+      <p class="not">Uygulama şu an seçili işletmelerle davetle test ediliyor. Mağaza yayını hazırlanıyor.</p>
     </div>
     <div class="sahne">
       <div class="telefon" role="img" aria-label="Yekpare uygulamasının Bugün ekranı: sekiz kısayol kutusu, günü kapatma kartı ve bugünün randevuları.">
@@ -196,14 +203,14 @@ footer nav a { color: var(--metin); text-underline-offset: 3px; }
 
   <section class="bolum alt">
     <div class="kap">
-      <h2>Salonda gerçekten işe yarayanlar</h2>
+      <h2>Küçük işletmede gerçekten işe yarayanlar</h2>
       <p class="giris">Karmaşık menüler yok. Her şey ana ekrandaki sekiz kutudan açılır.</p>
       <ul class="liste">
         <li><b>Randevu</b><span>Gün ve hafta takvimi, çakışma uyarısı, telefonunuzun takvimiyle eşitleme.</span></li>
         <li><b>Müşteri</b><span>Rehberinizden seçerek aktarın. Notlar, geçmiş ve uzun süredir gelmeyenler yanınızda.</span></li>
         <li><b>Kasa</b><span>Tahsilat, avans, alacak ve borç takibi. Kalan borcu müşteri bazında görürsünüz.</span></li>
         <li><b>WhatsApp mesajları</b><span>Kendi ağzınızla yazdığınız hazır mesajlar. Mesaj sizin numaranızdan gider.</span></li>
-        <li><b>Stok</b><span>Hazır boya ve malzeme listesi, azalan ürün için uyarı.</span></li>
+        <li><b>Stok</b><span>Malzeme ve ürün stoğu, azalan ürün için uyarı. Kuaför ve güzellik için hazır boya ve malzeme listesi.</span></li>
         <li><b>Ekip</b><span>Personel ve devam kaydı. Çalışan yalnız kendi randevularını görür; ekibin takvimini görüp görmeyeceğine sahip karar verir.</span></li>
         <li><b>Online randevu</b><span>Müşterinize kendi bağlantınızı verin, talebi siz onaylayın.</span></li>
         <li><b>Evde hizmet</b><span>Adres kaydı ve tek dokunuşla yol tarifi. Evde hizmet veren işletmeler için.</span></li>
@@ -213,9 +220,9 @@ footer nav a { color: var(--metin); text-underline-offset: 3px; }
 
   <section class="cagri">
     <div class="kap">
-      <h2>Pilot salonlarla birlikte geliştiriyoruz</h2>
-      <p>Yekpare’yi kendi salonunuzda deneyin. Eksik bulduğunuzu bize yazın, sırayla düzeltiyoruz.</p>
-      <a class="dugme" href="mailto:cagriozzturk@gmail.com?subject=Yekpare%20pilot%20salon">Bize yazın</a>
+      <h2>Pilot işletmelerle birlikte geliştiriyoruz</h2>
+      <p>Yekpare’yi kendi işletmenizde deneyin. Eksik bulduğunuzu bize yazın, sırayla düzeltiyoruz.</p>
+      <a class="dugme" href="mailto:cagriozzturk@gmail.com?subject=Yekpare%20pilot%20isletme">Bize yazın</a>
     </div>
   </section>
 </main>
